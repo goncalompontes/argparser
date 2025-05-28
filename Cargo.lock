@@ -3,5 +3,5 @@
 version = 4
 
 [[package]]
-name = "argparser"
+name = "parsarg"
 version = "0.1.0"
