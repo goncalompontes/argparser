@@ -1,16 +1,19 @@
 use crate::defs::*;
 
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub struct PositionalArg<'a> {
     value: &'a str,
 }
 
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub struct FlagArg<'a> {
     name: &'a ArgName<'a>,
 }
 
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub struct OptionArg<'a> {
-    name: &'a ArgName<'a>,
-    value: &'a str,
+    pub name: &'a ArgName<'a>,
+    pub value: &'a str,
 }
 
 pub trait FromArgument<'a>: Sized {

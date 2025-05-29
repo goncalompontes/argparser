@@ -1,23 +1,24 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub enum ArgDef<'a> {
     Short(char),
     Long(&'a str),
     ShortAndLong { short: char, long: &'a str },
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub enum ArgName<'a> {
     Short(char),
     Long(&'a str),
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub enum Argument<'a> {
     Positional { value: &'a str },
     Flag { name: ArgName<'a> },
     Option { name: ArgName<'a>, value: &'a str },
 }
 
+#[derive(Debug)]
 pub enum ParseArgError {
     MalformedArg(&'static str),
 }

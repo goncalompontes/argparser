@@ -4,13 +4,12 @@ use crate::defs::Argument;
 use crate::defs::ParseArgError;
 use std::iter::Peekable;
 
-///
-pub fn parse(args: &[String]) -> Result<Args, ParseArgError> {
+pub fn parse<'a>(args: &'a [&str]) -> Result<Args<'a>, ParseArgError> {
     let mut result = Vec::new();
-    let mut args = args.iter().map(String::as_str).peekable();
+    let mut args = args.iter().peekable();
 
     let mut positional = false;
-    while let Some(arg) = args.next() {
+    while let Some(&arg) = args.next() {
         if positional {
             result.push(parse_positional(arg));
             continue;
@@ -39,7 +38,7 @@ fn parse_positional(arg: &str) -> Argument {
 
 fn parse_long<'a, I>(arg: &'a str, input: &mut Peekable<I>) -> Result<Argument<'a>, ParseArgError>
 where
-    I: Iterator<Item = &'a str>,
+    I: Iterator<Item = &'a &'a str>,
 {
     if let Some((name, value)) = arg.split_once("=") {
         Ok(Argument::Option {
@@ -76,7 +75,7 @@ fn parse_short<'a, I>(
     input: &mut Peekable<I>,
 ) -> Result<Vec<Argument<'a>>, ParseArgError>
 where
-    I: Iterator<Item = &'a str>,
+    I: Iterator<Item = &'a &'a str>,
 {
     if arg.len() < 2 {
         return Err(ParseArgError::MalformedArg(
