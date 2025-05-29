@@ -196,7 +196,6 @@ impl<'a> Args<'a> {
     /// Checks if an argument matching the given [`ArgDef`] is present.
     ///
     /// Returns `true` if any flag or option matches the definition,
-    /// regardless of whether it can be parsed into a specific type.
     ///
     /// # Arguments
     ///
@@ -213,7 +212,7 @@ impl<'a> Args<'a> {
     /// ```
     ///
     /// [`ArgDef`]: crate::ArgDef
-    pub fn has<T: FromArgument<'a>>(&'a self, def: ArgDef) -> bool {
+    pub fn has(&self, def: ArgDef) -> bool {
         self.iter()
             .any(|arg| match arg {
                 Argument::Flag { name } | Argument::Option { name, .. } => def.matches(name),
