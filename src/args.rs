@@ -1,19 +1,20 @@
 use crate::types::FromArgument;
 use crate::{defs::*, parser};
 use std::ops::Deref;
+use crate::parser::ParserContext;
 
 /// A parsed list of command-line arguments.
 ///
 /// The `Args` struct wraps a `Vec<Argument<'a>>` and provides convenience
 /// methods for querying and extracting data from parsed command-line arguments.
 ///
-/// You typically obtain an `Args` instance by calling [`Args::parse()`].
+/// You typically obtain an `Args` instance by calling [`Args::parse_all()`].
 ///
 /// # Examples
 ///
 /// ```
 /// # use argsparse::Args;
-/// let args = Args::parse(&["--flag", "-o", "value"]).unwrap();
+/// let args = Args::parse_all(&["--flag", "-o", "value"]).unwrap();
 /// ```
 #[derive(Debug)]
 pub struct Args<'a>(pub Vec<Argument<'a>>);
@@ -38,7 +39,7 @@ impl<'a> Deref for Args<'a> {
 ///
 /// ```
 /// # use argsparse::Args;
-/// let args = Args::parse(&["--foo", "bar"]).unwrap();
+/// let args = Args::parse_all(&["--foo", "bar"]).unwrap();
 /// for arg in args {
 ///     println!("{:?}", arg);
 /// }
@@ -59,7 +60,7 @@ impl<'a> IntoIterator for Args<'a> {
 ///
 /// ```
 /// # use argsparse::Args;
-/// let args = Args::parse(&["--foo", "bar"]).unwrap();
+/// let args = Args::parse_all(&["--foo", "bar"]).unwrap();
 /// for arg in &args {
 ///     println!("{:?}", arg);
 /// }
@@ -80,7 +81,7 @@ impl<'a, 'b> IntoIterator for &'b Args<'a> {
 ///
 /// ```
 /// # use argsparse::{Args, Argument};
-/// let mut args = Args::parse(&["--foo", "bar"]).unwrap();
+/// let mut args = Args::parse_all(&["--foo", "bar"]).unwrap();
 /// for arg in &mut args {
 ///     // Modify or inspect arguments
 ///     println!("{:?}", arg);
@@ -111,7 +112,7 @@ impl<'a> Args<'a> {
     ///
     /// ```
     /// # use argsparse::{ArgName, Args, OptionArg};
-    /// let args = Args::parse(&["testing", "--some", "args", "-here", "--", "--end"]).unwrap();
+    /// let args = Args::parse_all(&["testing", "--some", "args", "-here", "--", "--end"]).unwrap();
     ///
     /// let options = args.find_all::<OptionArg>();
     /// let expected = OptionArg {
@@ -143,7 +144,7 @@ impl<'a> Args<'a> {
     ///
     /// ```
     /// # use argsparse::{Args, OptionArg};
-    /// let args = Args::parse(&["--foo", "bar", "--baz", "qux"]).unwrap();
+    /// let args = Args::parse_all(&["--foo", "bar", "--baz", "qux"]).unwrap();
     ///
     /// for opt in args.iter_all::<OptionArg>() {
     ///     println!("Option: {:?}", opt);
@@ -174,7 +175,7 @@ impl<'a> Args<'a> {
     ///
     /// ```
     /// # use argsparse::{Args, ArgDef, OptionArg};
-    /// let args = Args::parse(&["--foo", "bar"]).unwrap();
+    /// let args = Args::parse_all(&["--foo", "bar"]).unwrap();
     /// let def = ArgDef::Long("foo");
     ///
     /// let opt: Option<OptionArg> = args.find(def);
@@ -205,7 +206,7 @@ impl<'a> Args<'a> {
     ///
     /// ```
     /// # use argsparse::{Args, ArgDef};
-    /// let args = Args::parse(&["--debug"]).unwrap();
+    /// let args = Args::parse_all(&["--debug"]).unwrap();
     /// let def = ArgDef::Long("debug");
     ///
     /// assert!(args.has(def));
@@ -235,13 +236,44 @@ impl<'a> Args<'a> {
     ///
     /// ```
     /// # use argsparse::Args;
-    /// let args = Args::parse(&["--help", "-v", "input.txt"]).unwrap();
+    /// let args = Args::parse_all(&["--help", "-v", "input.txt"]).unwrap();
     /// ```
     ///
     /// [`Args`]: crate::Args
     /// [`ParseArgError`]: crate::ParseArgError
-    pub fn parse(args: &'a [&str]) -> Result<Args<'a>, ParseArgError> {
+    pub fn parse_all(args: &'a [&str]) -> Result<Args<'a>, ParseArgError<'a>> {
         parser::parse(args)
+    }
+
+    /// Parses a list of command-line arguments using a custom [`ParserContext`].
+    ///
+    /// This allows parsing with custom expected argument definitions, which can restrict
+    /// unknown flags and options, or provide additional metadata to influence parsing.
+    ///
+    /// # Arguments
+    ///
+    /// * `args` - A slice of command-line argument strings.
+    /// * `ctx` - The parser context used to validate known arguments.
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(Args)` - If all arguments were parsed successfully and are valid in context.
+    /// * `Err(ParseArgError)` - If an unknown or invalid argument was encountered.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use argsparse::{ArgDef, Args, FlagArg, ParserContext};
+    /// let mut ctx = ParserContext::new();
+    /// let def = ArgDef::Long("flag");
+    /// ctx.register(def).unwrap();
+    ///
+    /// let args = Args::parse_with_context(&["--flag"], &ctx);
+    ///
+    /// args.unwrap().find::<FlagArg>(def).expect("Something went wrong");
+    /// ```
+    pub fn parse_with_context(args: &'a [&str], ctx: &ParserContext) -> Result<Args<'a>, ParseArgError<'a>> {
+        parser::parse_with_ctx(args, ctx)
     }
 
 }

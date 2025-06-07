@@ -5,4 +5,5 @@ mod types;
 
 pub use args::Args;
 pub use defs::{ArgDef, ArgName, Argument, ParseArgError};
-pub use types::{FlagArg, OptionArg, PositionalArg};
+pub use parser::ParserContext;
+pub use types::{FlagArg, OptionArg, PositionalArg, FromArgument};
